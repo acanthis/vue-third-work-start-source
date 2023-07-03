@@ -9,4 +9,9 @@ export default [
         path: '/counter-1',
         component: () => import("./demo1/DemoCounter.vue"),
     },
+    {
+        name: 'Counter Base 2',
+        path: '/counter-2',
+        component: () => import("./demo4/DemoCounter.vue"),
+    },
 ];
