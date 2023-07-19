@@ -29,14 +29,14 @@
                         </div>
 
                         <div class="backlog__counter">
-                            {{ sidebarTasks.length }}
+                            {{ tasksStore.sidebarTasks.length }}
                         </div>
                     </div>
 
                     <div class="backlog__target-area">
                         <!--  Задачи в бэклоге-->
                         <task-card
-                            v-for="task in sidebarTasks"
+                            v-for="task in tasksStore.sidebarTasks"
                             :key="task.id"
                             :task="task"
                             class="backlog__task"
@@ -50,30 +50,16 @@
 </template>
 
 <script setup>
-import {computed, reactive} from 'vue'
+import {reactive} from 'vue'
 import AppDrop from '@/common/components/AppDrop.vue'
 import TaskCard from '@/modules/tasks/components/TaskCard.vue'
 import {addActive, getTargetColumnTasks} from '@/common/helpers'
+import { useTasksStore } from '@/stores/tasks'
 
-const props = defineProps({
-    tasks: {
-        type: Array,
-        required: true
-    }
-})
-
+const tasksStore = useTasksStore()
 const state = reactive({backlogIsHidden: false})
 
-// Фильтруем задачи, которые относятся к бэклогу (columnId === null)
-const sidebarTasks = computed(() => {
-    return props.tasks
-        .filter(task => !task.columnId)
-        .sort((a, b) => a.sortOrder - b.sortOrder)
-})
-
-const emits = defineEmits(['updateTasks'])
-
-function moveTask(active, toTask) {
+function moveTask (active, toTask) {
     // Не обновляем массив, если задача не перемещалась
     if (toTask && active.id === toTask.id) {
         return
@@ -81,8 +67,8 @@ function moveTask(active, toTask) {
 
     const toColumnId = null
     // Получить задачи для текущей колонки
-    const targetColumnTasks = getTargetColumnTasks(toColumnId, props.tasks)
-    const activeClone = {...active, columnId: toColumnId}
+    const targetColumnTasks = getTargetColumnTasks(toColumnId, tasksStore.tasks)
+    const activeClone = { ...active, columnId: toColumnId }
     // Добавить активную задачу в колонку
     const resultTasks = addActive(activeClone, toTask, targetColumnTasks)
     const tasksToUpdate = []
@@ -90,11 +76,11 @@ function moveTask(active, toTask) {
     // Отсортировать задачи в колонке
     resultTasks.forEach((task, index) => {
         if (task.sortOrder !== index || task.id === active.id) {
-            const newTask = {...task, sortOrder: index}
+            const newTask = { ...task, sortOrder: index }
             tasksToUpdate.push(newTask)
         }
     })
-    emits('updateTasks', tasksToUpdate)
+    tasksStore.updateTasks(tasksToUpdate)
 }
 </script>
 

@@ -1,7 +1,7 @@
 <template>
     <main class="content">
         <section class="desk">
-            <router-view :tasks="props.tasks"/>
+            <router-view/>
             <!--      Шапка доски-->
             <div class="desk__header">
                 <h1 class="desk__title">Design Coffee Lab</h1>
@@ -9,7 +9,7 @@
                 <button
                     class="desk__add"
                     type="button"
-                    @click="addColumn"
+                    @click="columnsStore.addColumn"
                 >
                     Добавить столбец
                 </button>
@@ -18,15 +18,12 @@
                         <!--            Список пользователей-->
                         <ul class="user-filter">
                             <li
-                                v-for="user in users"
+                                v-for="user in usersStore.users"
                                 :key="user.id"
                                 :title="user.name"
                                 class="user-filter__item"
-                                :class="{ active: filters.users.some(id => id === user.id) }"
-                                @click="$emit(
-                    'applyFilters',
-                    { item: user.id, entity: 'users' }
-                  )"
+                                :class="{ active: filtersStore.filters.users.some(id => id === user.id) }"
+                                @click="filtersStore.applyFilters({ item: user.id, entity: 'users' })"
                             >
                                 <a class="user-filter__button">
                                     <img
@@ -46,11 +43,8 @@
                                 v-for="({ value, label }) in STATUSES"
                                 :key="value"
                                 class="meta-filter__item"
-                                :class="{ active: filters.statuses.some(s => s === value) }"
-                                @click="$emit(
-                    'applyFilters',
-                    { item: value, entity: 'statuses' }
-                  )"
+                                :class="{ active: filtersStore.filters.statuses.some(s => s === value) }"
+                                @click="filtersStore.applyFilters({ item: value, entity: 'statuses' })"
                             >
                                 <a
                                     class="meta-filter__status"
@@ -63,16 +57,14 @@
                 </div>
             </div>
             <!--      Колонки и задачи-->
-            <div v-if="columns.length" class="desk__columns">
+            <div v-if="columnsStore.columns.length" class="desk__columns">
                 <!--        Показываем колонки-->
                 <desk-column
-                    v-for="column in state.columns"
+                    v-for="column in columnsStore.columns"
                     :key="column.id"
                     :column="column"
-                    :tasks="props.tasks"
-                    @update="updateColumn"
-                    @delete="deleteColumn"
-                    @update-tasks="$emit('updateTasks', $event)"
+                    @update="columnsStore.updateColumn"
+                    @delete="columnsStore.deleteColumn"
                 />
             </div>
             <!--      Пустая доска-->
@@ -89,11 +81,11 @@
 <script setup>
 import {reactive} from 'vue'
 import columns from '@/mocks/columns.json'
-import users from '@/mocks/users.json'
 import {STATUSES} from '@/common/constants'
 import DeskColumn from '@/modules/columns/components/DeskColumn.vue'
 import {getImage} from '@/common/helpers'
 import {uniqueId} from 'lodash'
+import {useColumnsStore, useFiltersStore, useUsersStore} from '@/stores'
 
 const props = defineProps({
     tasks: {
@@ -106,7 +98,10 @@ const props = defineProps({
     }
 })
 
-defineEmits(['applyFilters', 'updateTasks'])
+// Определяем хранилища
+const usersStore = useUsersStore()
+const columnsStore = useColumnsStore()
+const filtersStore = useFiltersStore()
 
 const state = reactive({columns})
 

@@ -2,10 +2,7 @@
     <div class="app_layout">
         <app-layout-header/>
         <div class="content">
-            <app-layout-sidebar
-                :tasks="props.tasks"
-                @update-tasks="$emit('updateTasks', $event)"
-            />
+            <app-layout-sidebar />
             <slot/>
         </div>
     </div>
